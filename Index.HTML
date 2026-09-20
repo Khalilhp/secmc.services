@@ -1,0 +1,2383 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Service Check</title>
+
+<!-- JPG Download Library -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
+<style>
+:root {
+    --navy:#10233f;
+    --blue:#1d4ed8;
+    --blue-light:#eff6ff;
+    --green:#16a34a;
+    --green-light:#ecfdf3;
+    --red:#dc2626;
+    --red-light:#fef2f2;
+    --orange:#ea580c;
+    --orange-light:#fff7ed;
+    --purple:#7c3aed;
+    --purple-light:#f5f3ff;
+    --gray-50:#f8fafc;
+    --gray-100:#f1f5f9;
+    --gray-200:#e2e8f0;
+    --gray-400:#94a3b8;
+    --gray-600:#475569;
+    --gray-800:#1e293b;
+    --white:#fff;
+    --shadow:0 10px 30px rgba(15,23,42,.08);
+    --radius:18px;
+}
+
+* {
+    box-sizing:border-box;
+}
+
+body {
+    margin:0;
+    background:#eef2f7;
+    color:var(--gray-800);
+    font-family:Inter,"Segoe UI",Arial,sans-serif;
+}
+
+.dashboard {
+    max-width:1800px;
+    margin:auto;
+    padding:28px;
+}
+
+/* HEADER */
+
+.header {
+    background:
+        radial-gradient(circle at 90% 20%,rgba(59,130,246,.35),transparent 28%),
+        linear-gradient(135deg,#0b1d35,#173b67);
+    color:white;
+    border-radius:24px;
+    padding:28px 32px;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    box-shadow:var(--shadow);
+    margin-bottom:22px;
+}
+
+.header-left {
+    display:flex;
+    align-items:center;
+    gap:18px;
+}
+
+.logo {
+    width:58px;
+    height:58px;
+    border-radius:16px;
+    background:rgba(255,255,255,.12);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:28px;
+    backdrop-filter:blur(8px);
+}
+
+.header h1 {
+    margin:0;
+    font-size:30px;
+    font-weight:750;
+    letter-spacing:-.5px;
+}
+
+.header p {
+    margin:6px 0 0;
+    color:#cbd5e1;
+    font-size:14px;
+}
+
+.date-box {
+    text-align:right;
+}
+
+.date-box .label {
+    color:#94a3b8;
+    font-size:11px;
+    text-transform:uppercase;
+    letter-spacing:1px;
+}
+
+.date-box .date {
+    margin-top:5px;
+    font-weight:700;
+    font-size:16px;
+    cursor:pointer;
+}
+
+/* MAIN GRID */
+
+.main-grid {
+    display:grid;
+    grid-template-columns:minmax(0,1fr) 420px;
+    gap:22px;
+    align-items:start;
+}
+
+.card {
+    background:white;
+    border-radius:var(--radius);
+    box-shadow:var(--shadow);
+    border:1px solid var(--gray-200);
+    overflow:hidden;
+}
+
+.card-header {
+    padding:20px 22px;
+    border-bottom:1px solid var(--gray-200);
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-start;
+    gap:15px;
+}
+
+.card-title {
+    margin:0;
+    font-size:17px;
+    font-weight:750;
+    color:var(--navy);
+}
+
+.card-subtitle {
+    margin-top:4px;
+    color:var(--gray-400);
+    font-size:12px;
+}
+
+.edit-hint {
+    font-size:10px;
+    color:#94a3b8;
+    margin-top:6px;
+}
+
+/* BUTTONS */
+
+.table-actions {
+    display:flex;
+    gap:7px;
+    flex-wrap:wrap;
+    justify-content:flex-end;
+}
+
+.table-actions button {
+    border:0;
+    border-radius:8px;
+    padding:8px 12px;
+    font-size:11px;
+    font-weight:700;
+    cursor:pointer;
+    color:white;
+    transition:.2s;
+    white-space:nowrap;
+}
+
+.table-actions button:hover {
+    transform:translateY(-1px);
+    opacity:.9;
+}
+
+.btn-add {
+    background:#1d4ed8;
+}
+
+.btn-delete {
+    background:#dc2626;
+}
+
+.btn-save {
+    background:#16a34a;
+}
+
+.btn-reset {
+    background:#64748b;
+}
+
+.btn-download {
+    background:#7c3aed;
+}
+
+/* SERVICE TABLE */
+
+.table-wrap {
+    overflow-x:auto;
+}
+
+table {
+    width:100%;
+    border-collapse:collapse;
+    min-width:1120px;
+}
+
+th {
+    background:#f8fafc;
+    color:#475569;
+    font-size:11px;
+    text-transform:uppercase;
+    letter-spacing:.35px;
+    padding:14px 12px;
+    text-align:left;
+    border-bottom:1px solid var(--gray-200);
+    white-space:nowrap;
+}
+
+td {
+    padding:11px 12px;
+    font-size:14px;
+    border-bottom:1px solid #edf1f5;
+    vertical-align:middle;
+}
+
+tbody tr:hover {
+    background:#fafcff;
+}
+
+tbody tr.selected-row {
+    background:#dbeafe !important;
+}
+
+tbody tr.selected-row td:first-child {
+    box-shadow:inset 3px 0 #2563eb;
+}
+
+.row-number {
+    width:42px;
+    text-align:center !important;
+    color:#64748b;
+    font-weight:700;
+    background:#f8fafc;
+    cursor:pointer;
+    user-select:none;
+}
+
+tbody tr.selected-row .row-number {
+    background:#bfdbfe;
+    color:#1d4ed8;
+}
+
+.editable-cell {
+    cursor:text;
+    position:relative;
+}
+
+.editable-cell:hover {
+    background:#eff6ff;
+    outline:1px solid #93c5fd;
+}
+
+.editable-cell.editing {
+    padding:4px;
+    background:white;
+    outline:2px solid #2563eb;
+}
+
+.cell-input {
+    width:100%;
+    min-width:80px;
+    border:0;
+    outline:0;
+    background:transparent;
+    font:inherit;
+    color:#1e293b;
+    padding:7px;
+}
+
+.cell-select {
+    width:100%;
+    border:0;
+    outline:0;
+    background:white;
+    font:inherit;
+    color:#1e293b;
+    padding:7px;
+}
+
+.service-name {
+    font-weight:700;
+    color:var(--navy);
+    min-width:155px;
+    font-size:14px;
+}
+
+.ip {
+    font-family:Consolas,"Courier New",monospace;
+    color:#334155;
+    font-size:13px;
+    white-space:nowrap;
+}
+
+.latency {
+    font-weight:750;
+    white-space:nowrap;
+}
+
+.location {
+    color:#334155;
+    font-weight:600;
+}
+
+.loss {
+    font-weight:750;
+}
+
+/* STATUS */
+
+.status {
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+    border-radius:999px;
+    padding:5px 9px;
+    font-size:11px;
+    font-weight:700;
+    white-space:nowrap;
+}
+
+.status::before {
+    content:"";
+    width:6px;
+    height:6px;
+    border-radius:50%;
+}
+
+.yes {
+    background:var(--green-light);
+    color:var(--green);
+}
+
+.yes::before {
+    background:var(--green);
+}
+
+.no {
+    background:var(--red-light);
+    color:var(--red);
+}
+
+.no::before {
+    background:var(--red);
+}
+
+.blocked {
+    background:var(--orange-light);
+    color:var(--orange);
+}
+
+.blocked::before {
+    background:var(--orange);
+}
+
+.na {
+    background:var(--gray-100);
+    color:var(--gray-600);
+}
+
+.na::before {
+    background:var(--gray-400);
+}
+
+/* RIGHT SIDE */
+
+.side-stack {
+    display:flex;
+    flex-direction:column;
+    gap:22px;
+}
+
+/* TICKETS */
+
+.ticket-grid {
+    display:grid;
+    grid-template-columns:repeat(2,1fr);
+    gap:12px;
+    padding:18px;
+}
+
+.ticket-box {
+    padding:16px;
+    border-radius:14px;
+    background:var(--gray-50);
+    border:1px solid var(--gray-200);
+}
+
+.ticket-label {
+    font-size:11px;
+    color:var(--gray-600);
+    line-height:1.35;
+}
+
+.ticket-number {
+    font-size:25px;
+    font-weight:800;
+    margin-top:5px;
+    color:var(--navy);
+}
+
+.ticket-box.created {
+    background:var(--blue-light);
+}
+
+.ticket-box.engineer {
+    background:var(--purple-light);
+}
+
+.ticket-box.wip {
+    background:#fff7ed;
+}
+
+.ticket-box.resolved {
+    background:var(--green-light);
+}
+
+/* LAPTOP */
+
+.inventory {
+    padding:18px;
+}
+
+.inventory-row {
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    padding:13px 0;
+    border-bottom:1px solid var(--gray-200);
+}
+
+.inventory-row:last-child {
+    border-bottom:0;
+}
+
+.inventory-name {
+    font-size:12px;
+    color:var(--gray-600);
+}
+
+.inventory-value {
+    font-size:20px;
+    font-weight:800;
+    color:var(--navy);
+}
+
+/* PENDING */
+
+.pending-card {
+    margin-top:22px;
+}
+
+.pending-grid {
+    display:grid;
+    grid-template-columns:repeat(2,1fr);
+    gap:14px;
+    padding:18px;
+}
+
+.issue {
+    padding:18px;
+    border-radius:13px;
+    background:#fff7ed;
+    border:1px solid #fed7aa;
+}
+
+.issue-title {
+    font-size:12px;
+    font-weight:700;
+    color:#9a3412;
+}
+
+.issue-value {
+    margin-top:4px;
+    font-size:28px;
+    font-weight:800;
+    color:#7c2d12;
+}
+
+/* EDITABLE SIDE */
+
+.side-edit {
+    cursor:text;
+    border-radius:5px;
+    padding:2px 5px;
+}
+
+.side-edit:hover {
+    background:#eff6ff;
+    outline:1px solid #93c5fd;
+}
+
+.side-input {
+    width:70px;
+    border:1px solid #93c5fd;
+    border-radius:6px;
+    padding:5px;
+    text-align:right;
+    font-size:inherit;
+    font-weight:inherit;
+    outline:none;
+}
+
+/* FOOTER */
+
+.footer {
+    margin-top:22px;
+    padding:15px 20px;
+    border-radius:15px;
+    background:#10233f;
+    color:#cbd5e1;
+    display:flex;
+    justify-content:space-between;
+    font-size:11px;
+}
+
+.footer strong {
+    color:white;
+}
+
+/* RESPONSIVE */
+
+@media(max-width:1250px) {
+    .main-grid {
+        grid-template-columns:1fr;
+    }
+
+    .side-stack {
+        display:grid;
+        grid-template-columns:repeat(2,1fr);
+    }
+}
+
+@media(max-width:850px) {
+    .dashboard {
+        padding:14px;
+    }
+
+    .header {
+        flex-direction:column;
+        align-items:flex-start;
+        gap:18px;
+    }
+
+    .date-box {
+        text-align:left;
+    }
+
+    .side-stack {
+        grid-template-columns:1fr;
+    }
+
+    .card-header {
+        flex-direction:column;
+    }
+
+    .table-actions {
+        justify-content:flex-start;
+    }
+
+    .pending-grid {
+        grid-template-columns:1fr;
+    }
+}
+
+/* PRINT */
+
+@media print {
+    body {
+        background:white;
+    }
+
+    .dashboard {
+        max-width:none;
+        padding:10px;
+    }
+
+    .header,
+    .card {
+        box-shadow:none;
+    }
+
+    .table-actions {
+        display:none;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<div class="dashboard" id="dashboard">
+
+<header class="header">
+
+    <div class="header-left">
+
+        <div class="logo">IT</div>
+
+        <div>
+            <h1>Service Check</h1>
+		
+        </div>
+
+    </div>
+
+    <div class="date-box">
+
+        <div class="label">
+           Date
+        </div>
+
+        <div
+            class="date"
+            id="dashboardDate"
+            ondblclick="editDate()"
+            title="Double-click to change date"
+        ></div>
+
+    </div>
+
+</header>
+
+
+<!-- SITE SERVICE CONNECTIVITY -->
+
+<section class="main-grid">
+
+<div class="card">
+
+    <div class="card-header">
+
+        <div>
+
+            <h2 class="card-title">
+                Service Connectivity
+            </h2>
+
+          
+
+        </div>
+
+        <div class="table-actions">
+
+            <button
+                class="btn-add"
+                onclick="addService()"
+            >
+                ＋ Add Service
+            </button>
+
+            <button
+                class="btn-delete"
+                onclick="deleteSelectedService()"
+            >
+                🗑 Delete Row
+            </button>
+
+            <button
+                class="btn-save"
+                onclick="saveAllData();showSavedMessage()"
+            >
+                💾 Save
+            </button>
+
+            <button
+                class="btn-reset"
+                onclick="resetServices()"
+            >
+                ↩ Reset
+            </button>
+
+            <button
+                class="btn-download"
+                onclick="downloadJPG()"
+            >
+                📥 Download JPG
+            </button>
+
+        </div>
+
+    </div>
+
+    <div class="table-wrap">
+
+        <table>
+
+            <thead>
+
+                <tr>
+
+                    <th>#</th>
+                    <th>Name</th>
+                    <th>IP</th>
+                    <th>Accessible via Browser</th>
+                    <th>PING Reachable?</th>
+                    <th>Latency</th>
+                    <th>Location</th>
+                    <th>Ping Loss</th>
+
+                </tr>
+
+            </thead>
+
+            <tbody id="serviceTable"></tbody>
+
+        </table>
+
+    </div>
+
+</div>
+
+
+<!-- RIGHT SIDE -->
+
+<div class="side-stack">
+
+<div class="card">
+
+    <div class="card-header">
+
+        <div>
+
+            <h2 class="card-title">
+                Previous Day Ticket Summary
+            </h2>
+
+            <div class="card-subtitle">
+                Double-click number to edit
+            </div>
+
+        </div>
+
+    </div>
+
+    <div class="ticket-grid">
+
+        <div class="ticket-box created">
+
+            <div class="ticket-label">
+                Created
+            </div>
+
+            <div
+                class="ticket-number side-edit"
+                id="ticketCreated"
+                ondblclick="editSideValue(this,'ticket','created')"
+            >
+                3
+            </div>
+
+        </div>
+
+
+        <div class="ticket-box engineer">
+
+            <div class="ticket-label">
+                With SD Engineer
+            </div>
+
+            <div
+                class="ticket-number side-edit"
+                id="ticketEngineer"
+                ondblclick="editSideValue(this,'ticket','withSDEngineer')"
+            >
+                5
+            </div>
+
+        </div>
+
+
+        <div class="ticket-box wip">
+
+            <div class="ticket-label">
+                Work in Progress
+            </div>
+
+            <div
+                class="ticket-number side-edit"
+                id="ticketWip"
+                ondblclick="editSideValue(this,'ticket','workInProgress')"
+            >
+                3
+            </div>
+
+        </div>
+
+
+        <div class="ticket-box resolved">
+
+            <div class="ticket-label">
+                Resolved
+            </div>
+
+            <div
+                class="ticket-number side-edit"
+                id="ticketResolved"
+                ondblclick="editSideValue(this,'ticket','resolved')"
+            >
+                5
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<!-- LAPTOP SUMMARY -->
+
+<div class="card">
+
+    <div class="card-header">
+
+        <div>
+
+            <h2 class="card-title">
+                Laptop Summary
+            </h2>
+
+            <div class="card-subtitle">
+                Double-click quantity to edit
+            </div>
+
+        </div>
+
+    </div>
+
+    <div class="inventory">
+
+        <div class="inventory-row">
+
+            <div class="inventory-name">
+                Elitebook 660 G11
+            </div>
+
+            <div
+                class="inventory-value side-edit"
+                id="laptop660"
+                ondblclick="editSideValue(this,'laptop','elitebook660G11')"
+            >
+                10
+            </div>
+
+        </div>
+
+
+        <div class="inventory-row">
+
+            <div class="inventory-name">
+                Elitebook G1i 14
+            </div>
+
+            <div
+                class="inventory-value side-edit"
+                id="laptopG1i"
+                ondblclick="editSideValue(this,'laptop','elitebookG1i14')"
+            >
+                30
+            </div>
+
+        </div>
+
+
+        <div class="inventory-row">
+
+            <div class="inventory-name">
+                Total Inventory Available
+            </div>
+
+            <div
+                class="inventory-value"
+                id="laptopTotal"
+            >
+                40
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+</div>
+
+</section>
+
+
+<!-- PENDING ISSUES -->
+
+<div class="card pending-card">
+
+    <div class="card-header">
+
+        <div>
+
+            <h2 class="card-title">
+                Any Pending Issues
+            </h2>
+
+        </div>
+
+    </div>
+
+    <div class="pending-grid">
+
+        <div class="issue">
+
+            <div class="issue-title">
+                Repairing Cases With Vendor
+            </div>
+
+            <div
+                class="issue-value side-edit"
+                id="issueVendor"
+                ondblclick="editSideValue(this,'issue','vendor')"
+            >
+                3
+            </div>
+
+        </div>
+
+
+        <div class="issue">
+
+            <div class="issue-title">
+                Repairing Cases With ICT
+            </div>
+
+            <div
+                class="issue-value side-edit"
+                id="issueICT"
+                ondblclick="editSideValue(this,'issue','ict')"
+            >
+                4
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<footer class="footer">
+
+    <div>
+        <strong>Daily Site Service Check</strong>
+        &nbsp; | &nbsp;
+        IT Operations Dashboard
+    </div>
+
+    <div>
+        Excel-Style Editable Dashboard
+    </div>
+
+</footer>
+
+</div>
+
+
+<script>
+
+/* ============================================================
+   DEFAULT SERVICE DATA
+============================================================ */
+
+const defaultServiceData = [
+
+    {
+        name:"Primary Wateen Link",
+        ip:"58.27.234.210",
+        browser:"N/A",
+        ping:"YES",
+        latency:"15 ms",
+        location:"Public",
+        loss:"0%"
+    },
+
+    {
+        name:"Backup Link",
+        ip:"",
+        browser:"N/A",
+        ping:"",
+        latency:"",
+        location:"Public",
+        loss:""
+    },
+
+    {
+        name:"Fiori",
+        ip:"210.2.159.70 [PUBLIC 1]",
+        browser:"YES",
+        ping:"YES",
+        latency:"76 ms",
+        location:"Public",
+        loss:"0%"
+    },
+
+    {
+        name:"",
+        ip:"103.111.160.101 [PUBLIC 2]",
+        browser:"",
+        ping:"",
+        latency:"",
+        location:"Public",
+        loss:""
+    },
+
+    {
+        name:"Self Service",
+        ip:"172.16.235.12 [PRIVATE]",
+        browser:"YES",
+        ping:"YES",
+        latency:"34 ms",
+        location:"SECMC Cloud",
+        loss:"0%"
+    },
+
+    {
+        name:"",
+        ip:"",
+        browser:"",
+        ping:"",
+        latency:"",
+        location:"",
+        loss:""
+    },
+
+    {
+        name:"DMS Archieve",
+        ip:"172.16.235.36",
+        browser:"YES",
+        ping:"YES",
+        latency:"33 ms",
+        location:"SECMC Cloud",
+        loss:"0%"
+    },
+
+    {
+        name:"DMS Workflow",
+        ip:"172.16.235.36",
+        browser:"YES",
+        ping:"YES",
+        latency:"36 ms",
+        location:"SECMC Cloud",
+        loss:"0%"
+    },
+
+    {
+        name:"OptiMine",
+        ip:"172.16.235.46 [Private]",
+        browser:"YES",
+        ping:"YES",
+        latency:"30 ms",
+        location:"SECMC Cloud",
+        loss:"0%"
+    },
+
+    {
+        name:"",
+        ip:"",
+        browser:"",
+        ping:"",
+        latency:"",
+        location:"",
+        loss:""
+    },
+
+    {
+        name:"AdMine",
+        ip:"172.16.235.16 [Private]",
+        browser:"YES",
+        ping:"YES",
+        latency:"32 ms",
+        location:"SECMC Cloud",
+        loss:"0%"
+    },
+
+    {
+        name:"",
+        ip:"",
+        browser:"",
+        ping:"",
+        latency:"",
+        location:"",
+        loss:""
+    },
+
+    {
+        name:"Success Factor",
+        ip:"192.168.12.197 [PRIVATE]",
+        browser:"YES",
+        ping:"Blocked",
+        latency:"N/A",
+        location:"Engro Cloud",
+        loss:"N/A"
+    },
+
+    {
+        name:"",
+        ip:"",
+        browser:"",
+        ping:"",
+        latency:"",
+        location:"",
+        loss:""
+    },
+
+    {
+        name:"Velocity",
+        ip:"104.19.222.58",
+        browser:"YES",
+        ping:"YES",
+        latency:"23 ms",
+        location:"Public",
+        loss:"0%"
+    },
+
+    {
+        name:"Site Printers",
+        ip:"192.168.15.243/44/45/46",
+        browser:"NO",
+        ping:"YES",
+        latency:"6 ms",
+        location:"THAR LAN",
+        loss:"0%"
+    },
+
+    {
+        name:"SAP PRD",
+        ip:"172.16.67.4",
+        browser:"YES",
+        ping:"YES",
+        latency:"36 ms",
+        location:"SECMC Cloud",
+        loss:"0%"
+    }
+
+];
+
+
+/* ============================================================
+   LOAD DATA
+============================================================ */
+
+let serviceData =
+    JSON.parse(
+        localStorage.getItem("dailySiteServiceData")
+    ) ||
+    JSON.parse(
+        JSON.stringify(defaultServiceData)
+    );
+
+
+let ticketData =
+    JSON.parse(
+        localStorage.getItem("dailyTicketData")
+    ) ||
+    {
+        created:3,
+        withSDEngineer:5,
+        workInProgress:3,
+        resolved:5
+    };
+
+
+let laptopData =
+    JSON.parse(
+        localStorage.getItem("dailyLaptopData")
+    ) ||
+    {
+        elitebook660G11:10,
+        elitebookG1i14:30
+    };
+
+
+let pendingIssues =
+    JSON.parse(
+        localStorage.getItem("dailyPendingIssues")
+    ) ||
+    {
+        vendor:3,
+        ict:4
+    };
+
+
+let selectedServiceIndex = null;
+
+
+/* ============================================================
+   REMOVE OLD TEMP BACKUP DATA IF EXISTING
+============================================================ */
+
+if (laptopData.tempBackup !== undefined) {
+
+    delete laptopData.tempBackup;
+
+}
+
+if (laptopData.totalInventory !== undefined) {
+
+    delete laptopData.totalInventory;
+
+}
+
+localStorage.setItem(
+    "dailyLaptopData",
+    JSON.stringify(laptopData)
+);
+
+
+/* ============================================================
+   SAVE ALL
+============================================================ */
+
+function saveAllData() {
+
+    localStorage.setItem(
+        "dailySiteServiceData",
+        JSON.stringify(serviceData)
+    );
+
+    localStorage.setItem(
+        "dailyTicketData",
+        JSON.stringify(ticketData)
+    );
+
+    localStorage.setItem(
+        "dailyLaptopData",
+        JSON.stringify(laptopData)
+    );
+
+    localStorage.setItem(
+        "dailyPendingIssues",
+        JSON.stringify(pendingIssues)
+    );
+}
+
+
+/* ============================================================
+   SAVE SERVICE
+============================================================ */
+
+function saveServiceData() {
+
+    localStorage.setItem(
+        "dailySiteServiceData",
+        JSON.stringify(serviceData)
+    );
+
+}
+
+
+/* ============================================================
+   ESCAPE HTML
+============================================================ */
+
+function escapeHTML(value) {
+
+    if (
+        value === null ||
+        value === undefined
+    ) {
+        return "";
+    }
+
+    return String(value)
+        .replace(/&/g,"&amp;")
+        .replace(/</g,"&lt;")
+        .replace(/>/g,"&gt;")
+        .replace(/"/g,"&quot;")
+        .replace(/'/g,"&#039;");
+}
+
+
+/* ============================================================
+   STATUS BADGE
+============================================================ */
+
+function statusBadge(value) {
+
+    if (!value) {
+        return "";
+    }
+
+    const text =
+        String(value).toUpperCase();
+
+    let className = "na";
+
+    if (text === "YES") {
+        className = "yes";
+    }
+
+    else if (text === "NO") {
+        className = "no";
+    }
+
+    else if (text === "BLOCKED") {
+        className = "blocked";
+    }
+
+    else if (text === "N/A") {
+        className = "na";
+    }
+
+    return `
+        <span class="status ${className}">
+            ${escapeHTML(value)}
+        </span>
+    `;
+}
+
+
+/* ============================================================
+   EDITABLE CELL
+============================================================ */
+
+function editableCell(
+    rowIndex,
+    field,
+    value,
+    extraClass=""
+) {
+
+    return `
+        <td
+            class="editable-cell ${extraClass}"
+            data-row="${rowIndex}"
+            data-field="${field}"
+            ondblclick="startEdit(this)"
+        >
+            ${escapeHTML(value || "")}
+        </td>
+    `;
+}
+
+
+/* ============================================================
+   RENDER SERVICES
+============================================================ */
+
+function renderServices() {
+
+    const table =
+        document.getElementById("serviceTable");
+
+    table.innerHTML = "";
+
+    serviceData.forEach(
+        (service,index) => {
+
+            const row =
+                document.createElement("tr");
+
+            if (
+                selectedServiceIndex === index
+            ) {
+
+                row.classList.add(
+                    "selected-row"
+                );
+
+            }
+
+            row.onclick =
+                function() {
+
+                    selectedServiceIndex =
+                        index;
+
+                    document
+                        .querySelectorAll(
+                            "#serviceTable tr"
+                        )
+                        .forEach(
+                            r =>
+                                r.classList.remove(
+                                    "selected-row"
+                                )
+                        );
+
+                    row.classList.add(
+                        "selected-row"
+                    );
+
+                };
+
+            row.innerHTML = `
+
+                <td
+                    class="row-number"
+                    onclick="selectService(event,${index})"
+                >
+                    ${index + 1}
+                </td>
+
+                ${editableCell(
+                    index,
+                    "name",
+                    service.name,
+                    "service-name"
+                )}
+
+                ${editableCell(
+                    index,
+                    "ip",
+                    service.ip,
+                    "ip"
+                )}
+
+                <td
+                    class="editable-cell"
+                    ondblclick="
+                        startStatusEdit(
+                            this,
+                            ${index},
+                            'browser'
+                        )
+                    "
+                >
+                    ${statusBadge(service.browser)}
+                </td>
+
+                <td
+                    class="editable-cell"
+                    ondblclick="
+                        startStatusEdit(
+                            this,
+                            ${index},
+                            'ping'
+                        )
+                    "
+                >
+                    ${statusBadge(service.ping)}
+                </td>
+
+                ${editableCell(
+                    index,
+                    "latency",
+                    service.latency,
+                    "latency"
+                )}
+
+                ${editableCell(
+                    index,
+                    "location",
+                    service.location,
+                    "location"
+                )}
+
+                ${editableCell(
+                    index,
+                    "loss",
+                    service.loss,
+                    "loss"
+                )}
+
+            `;
+
+            table.appendChild(row);
+
+        }
+    );
+
+}
+
+
+/* ============================================================
+   SELECT ROW
+============================================================ */
+
+function selectService(event,index) {
+
+    event.stopPropagation();
+
+    selectedServiceIndex = index;
+
+    renderServices();
+}
+
+
+/* ============================================================
+   TEXT EDIT
+============================================================ */
+
+function startEdit(cell) {
+
+    if (
+        cell.classList.contains("editing")
+    ) {
+        return;
+    }
+
+    const rowIndex =
+        Number(cell.dataset.row);
+
+    const field =
+        cell.dataset.field;
+
+    const oldValue =
+        serviceData[rowIndex][field] || "";
+
+    cell.classList.add("editing");
+
+    const input =
+        document.createElement("input");
+
+    input.type = "text";
+    input.className = "cell-input";
+    input.value = oldValue;
+
+    cell.innerHTML = "";
+    cell.appendChild(input);
+
+    input.focus();
+    input.select();
+
+    let finished = false;
+
+    function saveEdit() {
+
+        if (finished) {
+            return;
+        }
+
+        finished = true;
+
+        serviceData[rowIndex][field] =
+            input.value.trim();
+
+        saveServiceData();
+
+        renderServices();
+
+    }
+
+    function cancelEdit() {
+
+        if (finished) {
+            return;
+        }
+
+        finished = true;
+
+        renderServices();
+
+    }
+
+    input.addEventListener(
+        "keydown",
+        function(event) {
+
+            if (event.key === "Enter") {
+
+                event.preventDefault();
+                saveEdit();
+
+            }
+
+            if (event.key === "Escape") {
+
+                event.preventDefault();
+                cancelEdit();
+
+            }
+
+        }
+    );
+
+    input.addEventListener(
+        "blur",
+        saveEdit
+    );
+
+}
+
+
+/* ============================================================
+   STATUS EDIT
+============================================================ */
+
+function startStatusEdit(
+    cell,
+    rowIndex,
+    field
+) {
+
+    if (
+        cell.classList.contains("editing")
+    ) {
+        return;
+    }
+
+    cell.classList.add("editing");
+
+    const oldValue =
+        serviceData[rowIndex][field] || "";
+
+    const select =
+        document.createElement("select");
+
+    select.className = "cell-select";
+
+    const options = [
+        "",
+        "YES",
+        "NO",
+        "BLOCKED",
+        "N/A"
+    ];
+
+    options.forEach(option => {
+
+        const opt =
+            document.createElement("option");
+
+        opt.value = option;
+        opt.textContent = option || "Blank";
+
+        if (option === oldValue) {
+            opt.selected = true;
+        }
+
+        select.appendChild(opt);
+
+    });
+
+    cell.innerHTML = "";
+    cell.appendChild(select);
+
+    select.focus();
+
+    let finished = false;
+
+    function saveStatus() {
+
+        if (finished) {
+            return;
+        }
+
+        finished = true;
+
+        serviceData[rowIndex][field] =
+            select.value;
+
+        saveServiceData();
+
+        renderServices();
+
+    }
+
+    function cancelStatus() {
+
+        if (finished) {
+            return;
+        }
+
+        finished = true;
+
+        renderServices();
+
+    }
+
+    select.addEventListener(
+        "change",
+        saveStatus
+    );
+
+    select.addEventListener(
+        "blur",
+        saveStatus
+    );
+
+    select.addEventListener(
+        "keydown",
+        function(event) {
+
+            if (event.key === "Escape") {
+
+                event.preventDefault();
+                cancelStatus();
+
+            }
+
+            if (event.key === "Enter") {
+
+                event.preventDefault();
+                saveStatus();
+
+            }
+
+        }
+    );
+
+}
+
+
+/* ============================================================
+   ADD SERVICE
+============================================================ */
+
+function addService() {
+
+    serviceData.push({
+
+        name:"New Service",
+        ip:"",
+        browser:"",
+        ping:"",
+        latency:"",
+        location:"",
+        loss:""
+
+    });
+
+    selectedServiceIndex =
+        serviceData.length - 1;
+
+    saveServiceData();
+
+    renderServices();
+
+    setTimeout(() => {
+
+        const rows =
+            document.querySelectorAll(
+                "#serviceTable tr"
+            );
+
+        const lastRow =
+            rows[rows.length - 1];
+
+        if (lastRow) {
+
+            lastRow.scrollIntoView({
+                behavior:"smooth",
+                block:"center"
+            });
+
+            const nameCell =
+                lastRow.querySelector(
+                    '[data-field="name"]'
+                );
+
+            if (nameCell) {
+                startEdit(nameCell);
+            }
+
+        }
+
+    },100);
+
+}
+
+
+/* ============================================================
+   DELETE SERVICE
+============================================================ */
+
+function deleteSelectedService() {
+
+    if (
+        selectedServiceIndex === null ||
+        selectedServiceIndex === undefined
+    ) {
+
+        alert("Please select a row first.");
+
+        return;
+    }
+
+    const service =
+        serviceData[selectedServiceIndex];
+
+    const confirmDelete =
+        confirm(
+            `Delete "${
+                service.name ||
+                "this service"
+            }"?`
+        );
+
+    if (!confirmDelete) {
+        return;
+    }
+
+    serviceData.splice(
+        selectedServiceIndex,
+        1
+    );
+
+    selectedServiceIndex = null;
+
+    saveServiceData();
+
+    renderServices();
+
+}
+
+
+/* ============================================================
+   RESET SERVICES
+============================================================ */
+
+function resetServices() {
+
+    const confirmReset =
+        confirm(
+            "Reset service table to the original data?"
+        );
+
+    if (!confirmReset) {
+        return;
+    }
+
+    serviceData =
+        JSON.parse(
+            JSON.stringify(
+                defaultServiceData
+            )
+        );
+
+    selectedServiceIndex = null;
+
+    saveServiceData();
+
+    renderServices();
+
+}
+
+
+/* ============================================================
+   TICKETS
+============================================================ */
+
+function renderTickets() {
+
+    document.getElementById(
+        "ticketCreated"
+    ).textContent =
+        ticketData.created;
+
+    document.getElementById(
+        "ticketEngineer"
+    ).textContent =
+        ticketData.withSDEngineer;
+
+    document.getElementById(
+        "ticketWip"
+    ).textContent =
+        ticketData.workInProgress;
+
+    document.getElementById(
+        "ticketResolved"
+    ).textContent =
+        ticketData.resolved;
+
+}
+
+
+/* ============================================================
+   LAPTOPS
+============================================================ */
+
+function renderLaptops() {
+
+    document.getElementById(
+        "laptop660"
+    ).textContent =
+        laptopData.elitebook660G11;
+
+    document.getElementById(
+        "laptopG1i"
+    ).textContent =
+        laptopData.elitebookG1i14;
+
+    const total =
+        Number(
+            laptopData.elitebook660G11
+        ) +
+        Number(
+            laptopData.elitebookG1i14
+        );
+
+    document.getElementById(
+        "laptopTotal"
+    ).textContent =
+        total;
+
+}
+
+
+/* ============================================================
+   PENDING ISSUES
+============================================================ */
+
+function renderIssues() {
+
+    document.getElementById(
+        "issueVendor"
+    ).textContent =
+        pendingIssues.vendor;
+
+    document.getElementById(
+        "issueICT"
+    ).textContent =
+        pendingIssues.ict;
+
+}
+
+
+/* ============================================================
+   EDIT SIDE VALUES
+============================================================ */
+
+function editSideValue(
+    element,
+    type,
+    field
+) {
+
+    if (
+        element.querySelector("input")
+    ) {
+        return;
+    }
+
+    let currentValue;
+
+    if (type === "ticket") {
+
+        currentValue =
+            ticketData[field];
+
+    }
+
+    else if (type === "laptop") {
+
+        currentValue =
+            laptopData[field];
+
+    }
+
+    else {
+
+        currentValue =
+            pendingIssues[field];
+
+    }
+
+    const input =
+        document.createElement("input");
+
+    input.type = "number";
+    input.min = "0";
+    input.className = "side-input";
+    input.value = currentValue;
+
+    element.innerHTML = "";
+
+    element.appendChild(input);
+
+    input.focus();
+    input.select();
+
+    let finished = false;
+
+    function save() {
+
+        if (finished) {
+            return;
+        }
+
+        finished = true;
+
+        const value =
+            Number(input.value);
+
+        if (type === "ticket") {
+
+            ticketData[field] =
+                value;
+
+        }
+
+        else if (type === "laptop") {
+
+            laptopData[field] =
+                value;
+
+        }
+
+        else {
+
+            pendingIssues[field] =
+                value;
+
+        }
+
+        saveAllData();
+
+        renderTickets();
+        renderLaptops();
+        renderIssues();
+
+    }
+
+    function cancel() {
+
+        if (finished) {
+            return;
+        }
+
+        finished = true;
+
+        renderTickets();
+        renderLaptops();
+        renderIssues();
+
+    }
+
+    input.addEventListener(
+        "keydown",
+        function(event) {
+
+            if (event.key === "Enter") {
+
+                event.preventDefault();
+                save();
+
+            }
+
+            if (event.key === "Escape") {
+
+                event.preventDefault();
+                cancel();
+
+            }
+
+        }
+    );
+
+    input.addEventListener(
+        "blur",
+        save
+    );
+
+}
+
+
+/* ============================================================
+   DATE
+============================================================ */
+
+function setDashboardDate() {
+
+    const savedDate =
+        localStorage.getItem(
+            "dashboardDate"
+        );
+
+    const element =
+        document.getElementById(
+            "dashboardDate"
+        );
+
+    if (savedDate) {
+
+        element.textContent =
+            savedDate;
+
+        return;
+
+    }
+
+    const today =
+        new Date();
+
+    const options = {
+
+        weekday:"long",
+        year:"numeric",
+        month:"long",
+        day:"numeric"
+
+    };
+
+    element.textContent =
+        today.toLocaleDateString(
+            "en-US",
+            options
+        );
+
+}
+
+
+/* ============================================================
+   EDIT DATE
+============================================================ */
+
+function editDate() {
+
+    const element =
+        document.getElementById(
+            "dashboardDate"
+        );
+
+    if (
+        element.querySelector("input")
+    ) {
+        return;
+    }
+
+    const oldValue =
+        element.textContent;
+
+    const input =
+        document.createElement("input");
+
+    input.type = "date";
+
+    input.style.padding = "7px";
+    input.style.borderRadius = "7px";
+    input.style.border =
+        "1px solid #93c5fd";
+
+    element.innerHTML = "";
+
+    element.appendChild(input);
+
+    input.focus();
+
+    function saveDate() {
+
+        if (!input.value) {
+
+            element.textContent =
+                oldValue;
+
+            return;
+
+        }
+
+        const date =
+            new Date(
+                input.value + "T00:00:00"
+            );
+
+        const formatted =
+            date.toLocaleDateString(
+                "en-US",
+                {
+                    weekday:"long",
+                    year:"numeric",
+                    month:"long",
+                    day:"numeric"
+                }
+            );
+
+        element.textContent =
+            formatted;
+
+        localStorage.setItem(
+            "dashboardDate",
+            formatted
+        );
+
+    }
+
+    input.addEventListener(
+        "change",
+        saveDate
+    );
+
+    input.addEventListener(
+        "blur",
+        function() {
+
+            if (input.value) {
+                saveDate();
+            }
+            else {
+                element.textContent =
+                    oldValue;
+            }
+
+        }
+    );
+
+}
+
+
+/* ============================================================
+   SAVE MESSAGE
+============================================================ */
+
+function showSavedMessage() {
+
+    const button =
+        document.querySelector(
+            ".btn-save"
+        );
+
+    const original =
+        button.innerHTML;
+
+    button.innerHTML =
+        "✓ Saved";
+
+    setTimeout(
+        () => {
+
+            button.innerHTML =
+                original;
+
+        },
+        1200
+    );
+
+}
+
+
+/* ============================================================
+   DOWNLOAD DASHBOARD AS JPG
+============================================================ */
+
+async function downloadJPG() {
+
+    const button =
+        document.querySelector(
+            ".btn-download"
+        );
+
+    const original =
+        button.innerHTML;
+
+    try {
+
+        button.innerHTML =
+            "⏳ Preparing...";
+
+        button.disabled = true;
+
+        /* Save latest data first */
+        saveAllData();
+
+        const dashboard =
+            document.getElementById(
+                "dashboard"
+            );
+
+        const canvas =
+            await html2canvas(
+                dashboard,
+                {
+                    scale:2,
+                    useCORS:true,
+                    backgroundColor:"#eef2f7",
+                    logging:false
+                }
+            );
+
+        const link =
+            document.createElement("a");
+
+        const date =
+            new Date()
+                .toISOString()
+                .split("T")[0];
+
+        link.download =
+            `Daily-Site-Service-Check-${date}.jpg`;
+
+        link.href =
+            canvas.toDataURL(
+                "image/jpeg",
+                0.95
+            );
+
+        link.click();
+
+        button.innerHTML =
+            "✓ Downloaded";
+
+        setTimeout(
+            () => {
+
+                button.innerHTML =
+                    original;
+
+                button.disabled = false;
+
+            },
+            1500
+        );
+
+    }
+
+    catch(error) {
+
+        console.error(error);
+
+        alert(
+            "Unable to generate JPG. Please try again."
+        );
+
+        button.innerHTML =
+            original;
+
+        button.disabled = false;
+
+    }
+
+}
+
+
+/* ============================================================
+   DELETE KEY
+============================================================ */
+
+document.addEventListener(
+    "keydown",
+    function(event) {
+
+        if (
+            event.key === "Delete" &&
+            selectedServiceIndex !== null &&
+            !event.target.matches(
+                "input,select"
+            )
+        ) {
+
+            deleteSelectedService();
+
+        }
+
+    }
+);
+
+
+/* ============================================================
+   INITIALIZE
+============================================================ */
+
+renderServices();
+
+renderTickets();
+
+renderLaptops();
+
+renderIssues();
+
+setDashboardDate();
+
+</script>
+
+</body>
+</html>
